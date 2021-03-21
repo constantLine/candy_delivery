@@ -6,3 +6,37 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+def check_num(sit: bool, ident=0, reg=(0, 0)):
+    if sit and (ident < 1 or not isinstance(ident, int)):
+        return True
+    elif not sit and reg or \
+            (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
+        return True
+    else:
+        return False
+
+
+def check_str(lst):
+    for time in lst:
+        x = [i.split(':') for i in time.split('-')]
+
+        if len(x) != 2 or len(x[0]) != 2 or len(x[1]) != 2:
+            return True
+
+        try:
+            int(x[0][0])
+            int(x[0][1])
+            int(x[1][0])
+            int(x[1][1])
+        except ValueError:
+            return True
+
+        a, b, c, d = int(x[0][0]), int(x[0][1]), int(x[1][0]), int(x[1][1])
+
+        if not(-1 < a < 24) or not(-1 < c < 24) or \
+                not(-1 < b < 60) or not(-1 < d > 60):
+            return True
+
+        return False

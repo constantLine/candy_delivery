@@ -2,11 +2,14 @@ from app import db
 
 
 class Courier(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Integer)
-    regions = db.Column(db.String(255))
-    working_hours = db.Column(db.String(128))
+    id = db.Column('id', db.Integer, primary_key=True)
+    type = db.Column('type', db.Integer)
+    regions = db.Column('regions', db.String(255))
+    working_hours = db.Column('working_hours', db.String(128))
     orders = db.relationship('Order', backref='courier', lazy='dynamic')
+
+    def __repr__(self):
+        return f'Number - {self.id}'
 
 
 class Order(db.Model):

@@ -8,11 +8,11 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-def check_num(sit: bool, ident=0, reg=(0, 0)):
+def check_num(sit: bool, ident=0, reg=()):
     if sit and (ident < 1 or not isinstance(ident, int)):
         return True
-    elif not sit and reg or \
-            (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
+    elif not sit and \
+            not reg or (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
         return True
     else:
         return False
@@ -26,10 +26,10 @@ def check_str(lst):
             return True
 
         try:
-            int(x[0][0])
-            int(x[0][1])
-            int(x[1][0])
-            int(x[1][1])
+            x[0][0] = int(x[0][0])
+            x[0][1] = int(x[0][1])
+            x[1][0] = int(x[1][0])
+            x[1][1] = int(x[1][1])
         except ValueError:
             return True
 

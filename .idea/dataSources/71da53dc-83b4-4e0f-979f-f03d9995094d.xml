@@ -1355,7 +1355,7 @@
     </column>
     <column id="497" parent="171" name="type">
       <Position>2</Position>
-      <DataType>INTEGER|0s</DataType>
+      <DataType>VARCHAR(5)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
     <column id="498" parent="171" name="regions">

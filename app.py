@@ -29,7 +29,6 @@ def post_couriers():
                 check_num(False, reg=man['regions']) or \
                 man['courier_type'] not in ['foot', 'car', 'bike'] or\
                 check_str(man['working_hours']):
-
             errors.append({'id': man['courier_id']})
             continue
 

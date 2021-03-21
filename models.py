@@ -2,7 +2,7 @@ from app import db
 
 
 class Courier(db.Model):
-    courier_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Integer, unique=True, nullable=False)
     regions = db.Column(db.String(255), unique=True, nullable=False)
     working_hours = db.Column(db.String(128), unique=True, nullable=False)
@@ -13,8 +13,8 @@ class Courier(db.Model):
 
 
 class Order(db.Model):
-    order_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     weight = db.Column(db.Float)
     region = db.Column(db.Integer)
     delivery_hours = db.Column(db.String(128))
-    courier_id = db.Column(db.Integer, db.ForeignKey('courier.courier_id'))
+    courier_id = db.Column(db.Integer, db.ForeignKey('courier.id'))

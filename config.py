@@ -36,7 +36,7 @@ def check_str(lst):
         a, b, c, d = int(x[0][0]), int(x[0][1]), int(x[1][0]), int(x[1][1])
 
         if not(-1 < a < 24) or not(-1 < c < 24) or \
-                not(-1 < b < 60) or not(-1 < d > 60):
+                not(-1 < b < 60) or not(-1 < d < 60):
             return True
 
         return False

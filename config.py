@@ -40,3 +40,7 @@ def check_str(lst):
             return True
 
         return False
+
+
+def check_type(value):
+    return value in ['foot', 'car', 'bike']

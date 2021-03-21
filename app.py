@@ -41,7 +41,7 @@ def post_couriers():
         x = Courier(id=c['courier_id'],
                     type=c['courier_type'],
                     regions=str(c['regions']),
-                    working_hours=c['working_hours'])
+                    working_hours=str(c['working_hours']))
         db.session.add(x)
     db.session.commit()
 

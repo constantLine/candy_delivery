@@ -12,7 +12,7 @@ def check_num(sit: bool, ident=0, reg=()):
     if sit and (ident < 1 or not isinstance(ident, int)):
         return True
     elif not sit and \
-            not reg or (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
+            not reg or not (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
         return True
     else:
         return False

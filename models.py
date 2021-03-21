@@ -7,5 +7,9 @@ class Courier(db.Model):
     regions = db.Column(db.String(255))
     working_hours = db.Column(db.String(128))
 
-    def __repr__(self):
-        return f'<User {self.username}>'
+
+class Order(db.Model):
+    order_id = db.Column(db.Integer, primary_key=True)
+    weight = db.Column(db.Float)
+    region = db.Column(db.Integer)
+    delivery_hours = db.Column(db.String(128))

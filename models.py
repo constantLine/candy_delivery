@@ -2,10 +2,10 @@ from app import db
 
 
 class Courier(db.Model):
-    id = db.Column('id', db.Integer, primary_key=True)
-    type = db.Column('type', db.Integer)
-    regions = db.Column('regions', db.String(255))
-    working_hours = db.Column('working_hours', db.String(128))
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Integer, unique=True, nullable=False)
+    regions = db.Column(db.String(255), unique=True, nullable=False)
+    working_hours = db.Column(db.String(128), unique=True, nullable=False)
     orders = db.relationship('Order', backref='courier', lazy='dynamic')
 
     def __repr__(self):

@@ -12,7 +12,7 @@ def check_num(sit: bool, ident=0, reg=()):
     if sit and (ident < 1 or not isinstance(ident, int)):
         return True
     elif not sit and \
-            not reg or not (len(list(filter(lambda x: isinstance(x, int), reg))) == len(reg)):
+            not reg or not (len(list(filter(lambda x: isinstance(x, int) and x > 0, reg))) == len(reg)):
         return True
     else:
         return False
@@ -44,3 +44,16 @@ def check_str(lst):
 
 def check_type(value):
     return value in ['foot', 'car', 'bike']
+
+
+def trans_regs(regs: str):
+    return [int(i) for i in regs[1:-1].split(', ')]
+
+
+def trans_minutes(hours: str):
+    list_strings = [i for i in hours[1:-1].split(', ')]
+    for i in range(len(list_strings)):
+        s = list_strings[i]
+        s = [j.split(':') for j in s.split('-')]
+        list_strings[i] = (int(s[0][0])*60 + int(s[0][1]), int(s[1][0])*60 + int(s[1][1]))
+    return list_strings

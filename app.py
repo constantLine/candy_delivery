@@ -9,6 +9,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 from models import Courier, Order
+
 errors = []
 example_json = {
     'courier_id': 0,
@@ -32,9 +33,9 @@ def post_couriers():
     global errors
 
     for man in base:
-        if check_num(True, ident=man['courier_id']) or\
+        if check_num(True, ident=man['courier_id']) or \
                 check_num(False, reg=man['regions']) or \
-                not(check_type(man['courier_type'])) or\
+                not (check_type(man['courier_type'])) or \
                 check_str(man['working_hours']):
             errors.append({'id': man['courier_id']})
             continue
@@ -49,6 +50,16 @@ def post_couriers():
                     type=c['courier_type'],
                     regions=str(c['regions']),
                     working_hours=str(c['working_hours']))
+        if c['courier_type'] == 'foot':
+            x.max_weight = 10
+            x.weight_now = 0.0
+        elif c['courier_type'] == 'car':
+            x.max_weight = 15
+            x.weight_now = 0.0
+        elif c['courier_type'] == 'bike':
+            x.max_weight = 50
+            x.weight_now = 0.0
+
         db.session.add(x)
     db.session.commit()
 
@@ -68,12 +79,12 @@ def patch_courier(xid):
             else:
                 abort(400)
         elif key == 'regions':
-            if not(check_num(False, reg=value)):
+            if not (check_num(False, reg=value)):
                 change.regions = value
             else:
                 abort(400)
         elif key == 'working_hours':
-            if not(check_str(value)):
+            if not (check_str(value)):
                 change.working_hours = value
             else:
                 abort(400)
@@ -86,6 +97,35 @@ def patch_courier(xid):
     db.session.add(change)
     db.session.commit()
     return make_response(jsonify(response), 200)
+
+
+@app.route('/orders', methods=['POST'])
+def post_orders():
+    base, good_id = request.get_json()['data'], []
+    global errors
+
+    for order in base:
+        if check_num(True, ident=order['order_id']) or \
+                check_num(True, ident=order['region']) or \
+                not (isinstance(order['weight'], float) and order['weight'] > 0) or \
+                check_str(order['delivery_hours']):
+            errors.append({'id': order['order_id']})
+            continue
+
+        good_id.append({'id': order['order_id']})
+
+    if errors:
+        abort(400)
+
+    for c in base:
+        x = Order(id=c['order_id'],
+                  weight=c['weight'],
+                  region=str(c['region']),
+                  delivery_hours=str(c['delivery_hours']))
+        db.session.add(x)
+    db.session.commit()
+
+    return make_response(jsonify({'orders': good_id}), 201)
 
 
 if __name__ == '__main__':

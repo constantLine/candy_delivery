@@ -6,6 +6,8 @@ class Courier(db.Model):
     type = db.Column(db.String(5), nullable=False)
     regions = db.Column(db.String(255), nullable=False)
     working_hours = db.Column(db.String(128), unique=True, nullable=False)
+    max_weight = db.Column(db.Integer)
+    weight_now = db.Column(db.Float)
     orders = db.relationship('Order', backref='courier', lazy='dynamic')
 
     def __repr__(self):

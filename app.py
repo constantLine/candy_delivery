@@ -160,6 +160,7 @@ def orders_assign():
                         break
 
     assign_time = datetime.utcnow().isoformat()
+    db.session.commit()
     if not good_id:
         return make_response(jsonify({'orders': good_id}), 200)
     else:

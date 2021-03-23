@@ -145,7 +145,8 @@ def orders_assign():
 
     courier = Courier.query.get(c_id)
     if courier.orders.filter_by(complete=False).first() is not None:
-        resp = make_response(jsonify({'orders': courier.orders.filter_by(complete=False).all(),
+        need_orders = [{'id': i} for i in courier.orders.filter_by(complete=False).all()]
+        resp = make_response(jsonify({'orders': need_orders,
                                       'assign_time': assign_time}), 200)
         resp.headers = {'Content-Type': 'application/json'}
         return resp

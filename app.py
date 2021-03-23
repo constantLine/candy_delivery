@@ -145,7 +145,7 @@ def orders_assign():
 
     courier = Courier.query.get(c_id)
     if courier.orders.filter_by(complete=False).first() is not None:
-        return make_response(jsonify({'orders': courier.orders.filter(complete=False).all(),
+        return make_response(jsonify({'orders': courier.orders.filter_by(complete=False).all(),
                                       'assign_time': assign_time}), 200)
 
     assign_time = datetime.utcnow().isoformat()
@@ -166,8 +166,8 @@ def orders_assign():
                     if ok_time[0] < q_time[0] < ok_time[1]:  # проверка на валидность времени
                         # исполнение присваивания заказа курьеру и указание assign time
                         order.courier = courier
-                        order.delivery_time = assign_time
-                        courier.weight_now += order.weight
+                        order.assign_time = assign_time
+                        courier.weight_now = courier.weight_now + order.weight
                         good_id.append({'id': order.id})
                         break
 
@@ -183,6 +183,7 @@ def orders_assign():
 def complete_order():
     c_id, o_id = request.get_json()['courier_id'], request.get_json()['order_id']
     compl_time = request.get_json()['complete_time']
+    global assign_time
 
     if check_num(True, ident=c_id) or check_num(True, ident=o_id) or \
             Courier.query.get(c_id) is None or Order.query.get(o_id) is None or \
@@ -191,12 +192,12 @@ def complete_order():
 
     courier, order, compl_time = Courier.query.get(c_id), Order.query.get(o_id), datetime.fromisoformat(compl_time)
     if order.courier is courier:
-        if courier.orders.filter(complete=True).first() is None:
-            k = compl_time - datetime.fromisoformat(order.assign_time)
+        if courier.orders.filter_by(complete=True).first() is None:
+            k = compl_time - datetime.fromisoformat(assign_time)
             order.delta_time = k.total_seconds()
         else:
             k = compl_time - datetime.fromisoformat(order.assign_time)
-            order.assign_time = k.total_seconds()
+            order.delta_time = k.total_seconds()
             order.complete = True
             courier.weight_now = courier.weight_now - order.weight
             db.session.commit()

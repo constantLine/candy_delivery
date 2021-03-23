@@ -1368,67 +1368,87 @@
       <DataType>VARCHAR(128)|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="500" parent="171" name="sqlite_autoindex_courier_1">
+    <column id="500" parent="171" name="max_weight">
+      <Position>5</Position>
+      <DataType>INTEGER|0s</DataType>
+    </column>
+    <column id="501" parent="171" name="weight_now">
+      <Position>6</Position>
+      <DataType>FLOAT|0s</DataType>
+    </column>
+    <index id="502" parent="171" name="sqlite_autoindex_courier_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>working_hours</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="501" parent="171">
+    <key id="503" parent="171">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="502" parent="171">
+    <key id="504" parent="171">
       <ColNames>working_hours</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_courier_1</UnderlyingIndexName>
     </key>
-    <column id="503" parent="172" name="id">
+    <column id="505" parent="172" name="id">
       <Position>1</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="504" parent="172" name="weight">
+    <column id="506" parent="172" name="weight">
       <Position>2</Position>
       <DataType>FLOAT|0s</DataType>
     </column>
-    <column id="505" parent="172" name="region">
+    <column id="507" parent="172" name="region">
       <Position>3</Position>
       <DataType>INTEGER|0s</DataType>
     </column>
-    <column id="506" parent="172" name="delivery_hours">
+    <column id="508" parent="172" name="delivery_hours">
       <Position>4</Position>
       <DataType>VARCHAR(128)|0s</DataType>
     </column>
-    <column id="507" parent="172" name="courier_id">
+    <column id="509" parent="172" name="courier_id">
       <Position>5</Position>
       <DataType>INTEGER|0s</DataType>
     </column>
-    <key id="508" parent="172">
+    <column id="510" parent="172" name="complete">
+      <Position>6</Position>
+      <DataType>BOOLEAN|0s</DataType>
+    </column>
+    <column id="511" parent="172" name="assign_time">
+      <Position>7</Position>
+      <DataType>VARCHAR(128)|0s</DataType>
+    </column>
+    <column id="512" parent="172" name="delta_time">
+      <Position>8</Position>
+      <DataType>FLOAT|0s</DataType>
+    </column>
+    <key id="513" parent="172">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <foreign-key id="509" parent="172">
+    <foreign-key id="514" parent="172">
       <ColNames>courier_id</ColNames>
       <RefTableName>courier</RefTableName>
       <RefColNames>id</RefColNames>
     </foreign-key>
-    <column id="510" parent="173" name="type">
+    <column id="515" parent="173" name="type">
       <Position>1</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="511" parent="173" name="name">
+    <column id="516" parent="173" name="name">
       <Position>2</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="512" parent="173" name="tbl_name">
+    <column id="517" parent="173" name="tbl_name">
       <Position>3</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="513" parent="173" name="rootpage">
+    <column id="518" parent="173" name="rootpage">
       <Position>4</Position>
       <DataType>int|0s</DataType>
     </column>
-    <column id="514" parent="173" name="sql">
+    <column id="519" parent="173" name="sql">
       <Position>5</Position>
       <DataType>text|0s</DataType>
     </column>

@@ -54,7 +54,7 @@ def trans_regs(regs: str):
 def trans_minutes(hours: str):
     list_strings = [i for i in hours[1:-1].split(', ')]
     for i in range(len(list_strings)):
-        s = list_strings[i]
+        s = list_strings[i][1:-1]
         s = [j.split(':') for j in s.split('-')]
         list_strings[i] = (int(s[0][0])*60 + int(s[0][1]), int(s[1][0])*60 + int(s[1][1]))
     return list_strings

@@ -145,8 +145,10 @@ def orders_assign():
 
     courier = Courier.query.get(c_id)
     if courier.orders.filter_by(complete=False).first() is not None:
-        return make_response(jsonify({'orders': courier.orders.filter_by(complete=False).all(),
+        resp = make_response(jsonify({'orders': courier.orders.filter_by(complete=False).all(),
                                       'assign_time': assign_time}), 200)
+        resp.headers = {'Content-Type': 'application/json'}
+        return resp
 
     assign_time = datetime.utcnow().isoformat()
 
@@ -163,7 +165,8 @@ def orders_assign():
                     break                # из верхнего фора
 
                 for q_time in order_time:  # перебор времён заказа
-                    if ok_time[0] < q_time[0] < ok_time[1]:  # проверка на валидность времени
+                    if ok_time[0] < q_time[0] < ok_time[1] or\
+                            ok_time[0] < q_time[1] < ok_time[1]:  # проверка на валидность времени
                         # исполнение присваивания заказа курьеру и указание assign time
                         order.courier = courier
                         order.assign_time = assign_time
@@ -172,11 +175,15 @@ def orders_assign():
                         break
 
     db.session.commit()
+    response1 = make_response(jsonify({'orders': good_id, 'assign_time': assign_time[:22] + "Z"}), 200)
+    response1.headers = {'Content-Type': 'application/json'}
+    response2 = make_response(jsonify({'orders': good_id}), 200)
+    response2.headers = {'Content-Type': 'application/json'}
     if not good_id:
-        return make_response(jsonify({'orders': good_id}), 200)
+        return response2
     else:
 
-        return make_response(jsonify({'orders': good_id, 'assign_time': assign_time}), 200)
+        return response1
 
 
 @app.route('/orders/complete', methods=['POST'])
@@ -201,7 +208,7 @@ def complete_order():
             order.complete = True
             courier.weight_now = courier.weight_now - order.weight
             db.session.commit()
-        return make_response({'order_id': o_id}, 200)
+        return make_response(jsonify({'order_id': o_id}), 200)
     else:
         abort(400)
 

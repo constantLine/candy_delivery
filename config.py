@@ -62,8 +62,23 @@ def trans_minutes(hours: str):
 
 def check_date(s: str):
     try:
-        ret = datetime.fromisoformat(s)
+        ret = datetime.fromisoformat(s[:-1]+'0000')
     except ValueError:
         return True
 
     return False
+
+
+def trans_date(s: str):
+    return [j[1:-1] for j in [i for i in s[1:-1].split(', ')]]
+
+
+def get_weight(s: str):
+    ex = {  # example
+        'foot': 10,
+        'bike': 15,
+        'car': 50
+    }
+    for key, value in ex.items():
+        if key == s:
+            return ex[key]

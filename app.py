@@ -13,12 +13,6 @@ from models import Courier, Order
 
 errors = []
 assign_time = datetime.utcnow().isoformat()
-example_json = {
-    'courier_id': 0,
-    'courier_type': '_',
-    'regions': [],
-    'working_hours': '_'
-}
 
 
 @app.errorhandler(400)
@@ -56,17 +50,9 @@ def post_couriers():
         x = Courier(id=c['courier_id'],
                     type=c['courier_type'],
                     regions=str(c['regions']),
-                    working_hours=str(c['working_hours']))
-        if c['courier_type'] == 'foot':
-            x.max_weight = 10
-            x.weight_now = 0.0
-        elif c['courier_type'] == 'car':
-            x.max_weight = 15
-            x.weight_now = 0.0
-        elif c['courier_type'] == 'bike':
-            x.max_weight = 50
-            x.weight_now = 0.0
-
+                    working_hours=str(c['working_hours']),
+                    weight_now=0.0,
+                    max_weight=get_weight(c['courier_type']))
         db.session.add(x)
     db.session.commit()
 
@@ -75,24 +61,56 @@ def post_couriers():
 
 @app.route('/couriers/<int:xid>', methods=['PATCH'])
 def patch_courier(xid):
-    json, change = request.get_json(), Courier.query.get(xid)
-    global example_json
-    response = example_json
-    response['courier_id'] = xid
+    json, change, response = request.get_json(), Courier.query.get(xid), {'courier_id': xid}
+
     for key, value in json.items():
         if key == 'courier_type':
             if check_type(value):
+
+                if change.type == value:
+                    continue
                 change.type = value
+                change.max_weight = get_weight(change.type)
+                if change.max_weight < get_weight(change.type):
+
+                    for order in change.orders.order_by(Order.weight).all().reverse():
+                        if change.max_weight >= get_weight(change.type):
+                            break
+                        order.courier = None
+                        change.weight_now = change.weight_now - order.weight
             else:
                 abort(400)
+
         elif key == 'regions':
             if not (check_num(False, reg=value)):
+
+                if change.regions == value:
+                    continue
                 change.regions = value
+
+                for order in change.orders.filter_by(Order.region in change.regions).all():
+                    order.courier = None
+                    change.weight_now = change.weight_now - order.weight
+
             else:
                 abort(400)
         elif key == 'working_hours':
             if not (check_str(value)):
                 change.working_hours = value
+                time = trans_minutes(str(value))
+                for order in change.orders.all():
+                    change.weight_now = change.weight_now - order.weight
+
+                    for c_space in time:
+                        for o_space in trans_minutes(order.delivery_hours):
+                            if c_space[0] <= o_space[0] <= c_space[1] or c_space[0] <= o_space[1] <= c_space[1]:
+                                order.courier = change
+                                change.weight_now = change.weight_now + order.weight
+                                break
+                            else:
+                                order.courier = None
+                        if order.courier is not None:
+                            break
             else:
                 abort(400)
 
@@ -144,12 +162,10 @@ def orders_assign():
         abort(400)
 
     courier = Courier.query.get(c_id)
-    if courier.orders.filter_by(complete=False).first() is not None:
-        need_orders = [{'id': i} for i in courier.orders.filter_by(complete=False).all()]
-        resp = make_response(jsonify({'orders': need_orders,
-                                      'assign_time': assign_time}), 200)
-        resp.headers = {'Content-Type': 'application/json'}
-        return resp
+    not_complete_ord = courier.orders.filter_by(complete=False)
+    if not_complete_ord.first() is not None:
+        return make_response(jsonify({'orders': [{'id': i.id} for i in not_complete_ord.all()],
+                             'assign_time': assign_time[:22] + "Z"}), 200)
 
     assign_time = datetime.utcnow().isoformat()
 
@@ -176,15 +192,11 @@ def orders_assign():
                         break
 
     db.session.commit()
-    response1 = make_response(jsonify({'orders': good_id, 'assign_time': assign_time[:22] + "Z"}), 200)
-    response1.headers = {'Content-Type': 'application/json'}
-    response2 = make_response(jsonify({'orders': good_id}), 200)
-    response2.headers = {'Content-Type': 'application/json'}
     if not good_id:
-        return response2
+        return make_response(jsonify({'orders': good_id}), 200)
     else:
 
-        return response1
+        return make_response(jsonify({'orders': good_id, 'assign_time': assign_time[:22] + "Z"}), 200)
 
 
 @app.route('/orders/complete', methods=['POST'])
@@ -198,17 +210,17 @@ def complete_order():
             Order.query.get(o_id).courier is None or check_date(compl_time):
         abort(400)
 
-    courier, order, compl_time = Courier.query.get(c_id), Order.query.get(o_id), datetime.fromisoformat(compl_time)
+    courier, order = Courier.query.get(c_id), Order.query.get(o_id)
+    compl_time = datetime.fromisoformat(compl_time[:-1]+'0000')
     if order.courier is courier:
         if courier.orders.filter_by(complete=True).first() is None:
             k = compl_time - datetime.fromisoformat(assign_time)
-            order.delta_time = k.total_seconds()
         else:
             k = compl_time - datetime.fromisoformat(order.assign_time)
-            order.delta_time = k.total_seconds()
-            order.complete = True
-            courier.weight_now = courier.weight_now - order.weight
-            db.session.commit()
+        order.delta_time = k.total_seconds()
+        order.complete = True
+        courier.weight_now = courier.weight_now - order.weight
+        db.session.commit()
         return make_response(jsonify({'order_id': o_id}), 200)
     else:
         abort(400)
@@ -216,7 +228,13 @@ def complete_order():
 
 @app.route('/couriers/<int:xid>', methods=['GET'])
 def get_courier(xid):
-    pass
+    courier = Courier.query.get(xid)
+    r = {'courier_id': xid,
+         'courier_type': courier.type,
+         'regions': trans_regs(courier.regions),
+         'working_hours': trans_date(courier.working_hours)}
+
+
 
 
 if __name__ == '__main__':

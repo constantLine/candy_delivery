@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -57,3 +58,12 @@ def trans_minutes(hours: str):
         s = [j.split(':') for j in s.split('-')]
         list_strings[i] = (int(s[0][0])*60 + int(s[0][1]), int(s[1][0])*60 + int(s[1][1]))
     return list_strings
+
+
+def check_date(s: str):
+    try:
+        ret = datetime.fromisoformat(s)
+    except ValueError:
+        return True
+
+    return False

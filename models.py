@@ -19,7 +19,8 @@ class Order(db.Model):
     weight = db.Column(db.Float)
     region = db.Column(db.Integer)
     delivery_hours = db.Column(db.String(128))
-    delivery_time = db.Column(db.Integer)
+    delivery_time = db.Column(db.String(128))
+    delta_time = db.Column(db.Float, default=0.0)
     complete = db.Column(db.Boolean, default=False)
     courier_id = db.Column(db.Integer, db.ForeignKey('courier.id'))
 

@@ -12,11 +12,12 @@ migrate = Migrate(app, db)
 from models import Courier, Order
 
 errors = []
+assign_time = datetime.utcnow().isoformat()
 example_json = {
     'courier_id': 0,
-    'courier_type': 'a',
+    'courier_type': '_',
     'regions': [],
-    'working_hours': 'a'
+    'working_hours': '_'
 }
 
 
@@ -138,34 +139,72 @@ def post_orders():
 def orders_assign():
     c_id = request.get_json()['courier_id']
     good_id = []
-    if check_num(True, ident=c_id):
+    global assign_time
+    if check_num(True, ident=c_id) or Courier.query.get(c_id) is None:  # проверка на валидность данного id
         abort(400)
 
     courier = Courier.query.get(c_id)
-    for order in Order.query.all():
-        if courier is order.courier or order.courier is not None:
+    if courier.orders.filter_by(complete=False).first() is not None:
+        return make_response(jsonify({'orders': courier.orders.filter(complete=False).all(), 'assign_time': assign_time}), 200)
+    assign_time = datetime.utcnow().isoformat()
+    for order in Order.query.order_by(Order.weight).all():  # перебор всех заказов от меньшего веса к наибольшему
+        if order.courier is not None:  # если у заказа уже есть доставщик тот же/другой, то пропускаем его
             continue
         if order.region in trans_regs(courier.regions) and \
-                order.weight + courier.weight_now <= courier.max_weight:
+                order.weight + courier.weight_now <= courier.max_weight:  # проверка на валидность региона и веса
 
-            order_time = trans_minutes(order.delivery_hours)
-            for ok_time in trans_minutes(courier.working_hours):
-                if order.id in good_id:
-                    break
-                for q_time in order_time:
-                    if ok_time[0] < q_time[0] < ok_time[1]:
+            order_time = trans_minutes(order.delivery_hours)  # перевод str из бд в [tuple(start:int, end:int),..,tuple]
+            for ok_time in trans_minutes(courier.working_hours):  # перебор рабочих часов курьера
+
+                if order.id in good_id:  # если на предыдущей итерации нижнего for был добавлен данный заказ, то выход
+                    break                # из верхнего фора
+
+                for q_time in order_time:  # перебор времён заказа
+                    if ok_time[0] < q_time[0] < ok_time[1]:  # проверка на валидность времени
+                        # исполнение присваивания заказа курьеру и указание assign time
                         order.courier = courier
+                        order.delivery_time = assign_time
                         courier.weight_now += order.weight
                         good_id.append({'id': order.id})
                         break
 
-    assign_time = datetime.utcnow().isoformat()
     db.session.commit()
     if not good_id:
         return make_response(jsonify({'orders': good_id}), 200)
     else:
 
         return make_response(jsonify({'orders': good_id, 'assign_time': assign_time}), 200)
+
+
+@app.route('/orders/complete', methods=['POST'])
+def complete_order():
+    c_id, o_id = request.get_json()['courier_id'], request.get_json()['order_id']
+    compl_time = request.get_json()['complete_time']
+
+    if check_num(True, ident=c_id) or check_num(True, ident=o_id) or \
+            Courier.query.get(c_id) is None or Order.query.get(o_id) is None or \
+            Order.query.get(o_id).courier is None or check_date(compl_time):
+        abort(400)
+
+    courier, order, compl_time = Courier.query.get(c_id), Order.query.get(o_id), datetime.fromisoformat(compl_time)
+    if order.courier is courier:
+        if courier.orders.filter(complete=True).first() is None:
+            k = compl_time - datetime.fromisoformat(order.delivery_time)
+            order.delta_time = k.total_seconds()
+        else:
+            k = compl_time - datetime.fromisoformat(order.delivery_time)
+            order.delivery_time = k.total_seconds()
+            order.complete = True
+            courier.weight_now = courier.weight_now - order.weight
+            db.session.commit()
+        return make_response({'order_id': o_id}, 200)
+    else:
+        abort(400)
+
+
+@app.route('/couriers/<int:xid>', methods=['GET'])
+def get_courier(xid):
+    pass
 
 
 if __name__ == '__main__':

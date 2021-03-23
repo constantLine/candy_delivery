@@ -145,8 +145,11 @@ def orders_assign():
 
     courier = Courier.query.get(c_id)
     if courier.orders.filter_by(complete=False).first() is not None:
-        return make_response(jsonify({'orders': courier.orders.filter(complete=False).all(), 'assign_time': assign_time}), 200)
+        return make_response(jsonify({'orders': courier.orders.filter(complete=False).all(),
+                                      'assign_time': assign_time}), 200)
+
     assign_time = datetime.utcnow().isoformat()
+
     for order in Order.query.order_by(Order.weight).all():  # перебор всех заказов от меньшего веса к наибольшему
         if order.courier is not None:  # если у заказа уже есть доставщик тот же/другой, то пропускаем его
             continue
@@ -189,11 +192,11 @@ def complete_order():
     courier, order, compl_time = Courier.query.get(c_id), Order.query.get(o_id), datetime.fromisoformat(compl_time)
     if order.courier is courier:
         if courier.orders.filter(complete=True).first() is None:
-            k = compl_time - datetime.fromisoformat(order.delivery_time)
+            k = compl_time - datetime.fromisoformat(order.assign_time)
             order.delta_time = k.total_seconds()
         else:
-            k = compl_time - datetime.fromisoformat(order.delivery_time)
-            order.delivery_time = k.total_seconds()
+            k = compl_time - datetime.fromisoformat(order.assign_time)
+            order.assign_time = k.total_seconds()
             order.complete = True
             courier.weight_now = courier.weight_now - order.weight
             db.session.commit()

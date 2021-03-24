@@ -82,3 +82,12 @@ def get_weight(s: str):
     for key, value in ex.items():
         if key == s:
             return ex[key]
+
+
+def type_k(s: str):
+    if s == 'foot':
+        return 2
+    elif s == 'bike':
+        return 5
+    else:
+        return 9

@@ -187,6 +187,7 @@ def orders_assign():
                         # исполнение присваивания заказа курьеру и указание assign time
                         order.courier = courier
                         order.assign_time = assign_time
+                        order.courier_type = courier.type
                         courier.weight_now = courier.weight_now + order.weight
                         good_id.append({'id': order.id})
                         break
@@ -228,13 +229,29 @@ def complete_order():
 
 @app.route('/couriers/<int:xid>', methods=['GET'])
 def get_courier(xid):
-    courier = Courier.query.get(xid)
+    if check_num(True, ident=xid) or Courier.query.get(xid) is None:
+        abort(400)
+
+    courier, td, average = Courier.query.get(xid), [], []
     r = {'courier_id': xid,
          'courier_type': courier.type,
          'regions': trans_regs(courier.regions),
-         'working_hours': trans_date(courier.working_hours)}
+         'working_hours': trans_date(courier.working_hours),
+         'earnings': 0}
 
+    if courier.orders.filter_by(complete=True).first() is None:
+        return make_response(r, 200)
 
+    for order in courier.orders.filter_by(complete=True):
+        r['earnings'] += 500 * type_k(order.courier_type)
+
+    for region in trans_regs(courier.regions):
+        for order in courier.orders.filter_by(complete=True,  region=region):
+            td.append(order.delta_time)
+        average.append(sum(td)/len(td))
+
+    r['rating'] = (60*60 - min(min(average), 60*60))/(60*60) * 5
+    return make_response(r, 200)
 
 
 if __name__ == '__main__':

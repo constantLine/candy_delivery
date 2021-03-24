@@ -22,7 +22,7 @@ class Order(db.Model):
     assign_time = db.Column(db.String(128))
     delta_time = db.Column(db.Float, default=0.0)
     complete = db.Column(db.Boolean, default=False)
-
+    courier_type = db.Column(db.String(5))
     courier_id = db.Column(db.Integer, db.ForeignKey('courier.id'))
 
     def __repr__(self):

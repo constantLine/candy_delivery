@@ -70,15 +70,15 @@ def patch_courier(xid):
                 if change.type == value:
                     continue
                 change.type = value
-
-                if change.max_weight > get_weight(change.type):
+                change.max_weight = get_weight(change.type)
+                if change.weight_now > change.max_weight:
 
                     for order in change.orders.order_by(Order.weight).all().reverse():
-                        if change.weight_now <= get_weight(change.type):
-                            break
                         order.courier = None
                         change.weight_now = change.weight_now - order.weight
-                change.max_weight = get_weight(change.type)
+                        if change.weight_now <= change.max_weight:
+                            break
+
             else:
                 abort(400)
 

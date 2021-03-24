@@ -1423,32 +1423,36 @@
       <Position>8</Position>
       <DataType>FLOAT|0s</DataType>
     </column>
-    <key id="513" parent="172">
+    <column id="513" parent="172" name="courier_type">
+      <Position>9</Position>
+      <DataType>VARCHAR(5)|0s</DataType>
+    </column>
+    <key id="514" parent="172">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <foreign-key id="514" parent="172">
+    <foreign-key id="515" parent="172">
       <ColNames>courier_id</ColNames>
       <RefTableName>courier</RefTableName>
       <RefColNames>id</RefColNames>
     </foreign-key>
-    <column id="515" parent="173" name="type">
+    <column id="516" parent="173" name="type">
       <Position>1</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="516" parent="173" name="name">
+    <column id="517" parent="173" name="name">
       <Position>2</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="517" parent="173" name="tbl_name">
+    <column id="518" parent="173" name="tbl_name">
       <Position>3</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="518" parent="173" name="rootpage">
+    <column id="519" parent="173" name="rootpage">
       <Position>4</Position>
       <DataType>int|0s</DataType>
     </column>
-    <column id="519" parent="173" name="sql">
+    <column id="520" parent="173" name="sql">
       <Position>5</Position>
       <DataType>text|0s</DataType>
     </column>

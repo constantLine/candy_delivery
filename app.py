@@ -65,64 +65,60 @@ def patch_courier(xid):
 
     for key, value in json.items():
         if key == 'courier_type':
-            if check_type(value):
-
-                if change.type == value:
-                    continue
-                change.type = value
-                change.max_weight = get_weight(change.type)
-                if change.weight_now > change.max_weight:
-
-                    for order in change.orders.order_by(Order.weight).all().reverse():
-                        order.courier = None
-                        change.weight_now = change.weight_now - order.weight
-                        if change.weight_now <= change.max_weight:
-                            break
-
-            else:
+            if not check_type(value):
                 abort(400)
 
+            if change.type == value:
+                continue
+            change.type = value
+            change.max_weight = get_weight(change.type)
+            if change.weight_now > change.max_weight:
+
+                for order in change.orders.order_by(Order.weight).all()[::-1]:
+                    order.courier = None
+                    change.weight_now = change.weight_now - order.weight
+                    if change.weight_now <= change.max_weight:
+                        break
+
         elif key == 'regions':
-            if not (check_num(False, reg=value)):
+            if check_num(False, reg=value):
+                abort(400)
 
-                if change.regions == value:
-                    continue
-                change.regions = value
+            if change.regions == str(value):
+                continue
+            change.regions = str(value)
 
-                for order in change.orders.filter_by(Order.region in change.regions).all():
+            for order in change.orders.all():
+                if order.region not in value:
                     order.courier = None
                     change.weight_now = change.weight_now - order.weight
 
-            else:
-                abort(400)
         elif key == 'working_hours':
-            if not (check_str(value)):
-                change.working_hours = value
-                time = trans_minutes(str(value))
-                for order in change.orders.all():
-                    change.weight_now = change.weight_now - order.weight
-
-                    for c_space in time:
-                        for o_space in trans_minutes(order.delivery_hours):
-                            if c_space[0] <= o_space[0] <= c_space[1] or c_space[0] <= o_space[1] <= c_space[1]:
-                                order.courier = change
-                                change.weight_now = change.weight_now + order.weight
-                                break
-                            else:
-                                order.courier = None
-                        if order.courier is not None:
-                            break
-            else:
+            if check_str(value):
                 abort(400)
+
+            change.working_hours = str(value)
+            time = trans_minutes(str(value))
+            for order in change.orders.all():
+                change.weight_now = change.weight_now - order.weight
+
+                for c_space in time:
+                    for o_space in trans_minutes(order.delivery_hours):
+                        if c_space[0] <= o_space[0] <= c_space[1] or c_space[0] <= o_space[1] <= c_space[1]:
+                            order.courier = change
+                            change.weight_now = change.weight_now + order.weight
+                            break
+                        else:
+                            order.courier = None
+                    if order.courier is not None:
+                        break
 
         response['courier_type'] = change.type
-        response['regions'] = change.regions
-        response['working_hours'] = change.working_hours
-    change.regions = str(change.regions)
-    change.working_hours = str(change.working_hours)
-    db.session.add(change)
+        response['regions'] = trans_regs(change.regions)
+        response['working_hours'] = trans_date(change.working_hours)
+
     db.session.commit()
-    return make_response(jsonify(response), 200)
+    return make_response(response, 200)
 
 
 @app.route('/orders', methods=['POST'])

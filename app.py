@@ -70,14 +70,15 @@ def patch_courier(xid):
                 if change.type == value:
                     continue
                 change.type = value
-                change.max_weight = get_weight(change.type)
-                if change.max_weight < get_weight(change.type):
+
+                if change.max_weight > get_weight(change.type):
 
                     for order in change.orders.order_by(Order.weight).all().reverse():
-                        if change.max_weight >= get_weight(change.type):
+                        if change.weight_now <= get_weight(change.type):
                             break
                         order.courier = None
                         change.weight_now = change.weight_now - order.weight
+                change.max_weight = get_weight(change.type)
             else:
                 abort(400)
 
@@ -250,7 +251,7 @@ def get_courier(xid):
             td.append(order.delta_time)
         average.append(sum(td)/len(td))
 
-    r['rating'] = (60*60 - min(min(average), 60*60))/(60*60) * 5
+    r['rating'] = round((60*60 - min(min(average), 60*60))/(60*60) * 5, 2)
     return make_response(r, 200)
 
 

@@ -1,3 +1,3 @@
-from app import app
+from __init__ import app
 
-from app import routes, models, errors
+from __init__ import routes, models, errors

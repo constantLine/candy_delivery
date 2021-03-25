@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, abort, make_response
 from werkzeug.wrappers import BaseResponse as Response
-from app.config import Config
+from __init__.config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime

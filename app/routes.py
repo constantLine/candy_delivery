@@ -1,15 +1,8 @@
-from flask import Flask, request, jsonify, abort, make_response
+from flask import request, jsonify, abort, make_response
 from werkzeug.wrappers import BaseResponse as Response
-from flaskr.config import *
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from datetime import datetime
-
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-from flaskr.models import Courier, Order
+from app import app
+from models import *
 
 errors = []
 assign_time = datetime.utcnow().isoformat()
@@ -253,3 +246,4 @@ def get_courier(xid):
 
 if __name__ == '__main__':
     app.run()
+

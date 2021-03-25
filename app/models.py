@@ -1,12 +1,33 @@
-import os
+from app import db
 from datetime import datetime
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Config(object):
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'app.db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+class Courier(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(5), nullable=False)
+    regions = db.Column(db.String(255), nullable=False)
+    working_hours = db.Column(db.String(128), unique=True, nullable=False)
+    max_weight = db.Column(db.Integer)
+    weight_now = db.Column(db.Float, default=0.0)
+    orders = db.relationship('Order', backref='courier', lazy='dynamic')
+
+    def __repr__(self):
+        return f'Number - {self.id}'
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    weight = db.Column(db.Float)
+    region = db.Column(db.Integer)
+    delivery_hours = db.Column(db.String(128))
+    assign_time = db.Column(db.String(128))
+    delta_time = db.Column(db.Float, default=0.0)
+    complete = db.Column(db.Boolean, default=False)
+    courier_type = db.Column(db.String(5))
+    courier_id = db.Column(db.Integer, db.ForeignKey('courier.id'))
+
+    def __repr__(self):
+        return f'Number - {self.id}'
 
 
 def check_num(sit: bool, ident=0, reg=()):
@@ -53,10 +74,10 @@ def trans_regs(regs: str):
 
 def trans_minutes(hours: str):
     list_strings = [i for i in hours[1:-1].split(', ')]
-    for i in range(len(list_strings)):
-        s = list_strings[i][1:-1]
+    for k in range(len(list_strings)):
+        s = list_strings[k][1:-1]
         s = [j.split(':') for j in s.split('-')]
-        list_strings[i] = (int(s[0][0])*60 + int(s[0][1]), int(s[1][0])*60 + int(s[1][1]))
+        list_strings[k] = (int(s[0][0])*60 + int(s[0][1]), int(s[1][0])*60 + int(s[1][1]))
     return list_strings
 
 

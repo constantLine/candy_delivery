@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, abort, make_response
 from werkzeug.wrappers import BaseResponse as Response
-from config import *
+from flaskr.config import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-from models import Courier, Order
+from flaskr.models import Courier, Order
 
 errors = []
 assign_time = datetime.utcnow().isoformat()

@@ -95,3 +95,6 @@ class CourierModelCase(unittest.TestCase):
 
         self.assertEqual(c1.weight_now, 0.3)
         self.assertEqual(type(c1.weight_now), float)
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

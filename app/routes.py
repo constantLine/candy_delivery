@@ -1,30 +1,15 @@
 from flask import request, jsonify, abort, make_response
-from werkzeug.wrappers import BaseResponse as Response
 from datetime import datetime
 from app import app
-from models import *
+from app.models import *
 
-errors = []
 assign_time = datetime.utcnow().isoformat()
-
-
-@app.errorhandler(400)
-def say_error(err):
-    global errors
-    err = errors
-    errors = []
-    if request.path == '/couriers':
-        return make_response(jsonify({'validation error': {'couriers': err}}))
-    elif request.path == '/orders':
-        return make_response(jsonify({'validation error': {'orders': err}}))
-    else:
-        return Response(response="HTTP 400 Bad Request", status=400, mimetype="application/json")
 
 
 @app.route('/couriers', methods=['POST'])
 def post_couriers():
     base, good_id = request.get_json()['data'], []
-    global errors
+    errors = []
 
     for man in base:
         if check_num(True, ident=man['courier_id']) or \
@@ -37,7 +22,7 @@ def post_couriers():
         good_id.append({'id': man['courier_id']})
 
     if errors:
-        abort(400)
+        return make_response({'validation error': {'couriers': errors}}, 400)
 
     for c in base:
         x = Courier(id=c['courier_id'],
@@ -117,7 +102,7 @@ def patch_courier(xid):
 @app.route('/orders', methods=['POST'])
 def post_orders():
     base, good_id = request.get_json()['data'], []
-    global errors
+    errors = []
 
     for order in base:
         if check_num(True, ident=order['order_id']) or \
@@ -130,7 +115,7 @@ def post_orders():
         good_id.append({'id': order['order_id']})
 
     if errors:
-        abort(400)
+        return make_response({'validation error': {'couriers': errors}}, 400)
 
     for c in base:
         x = Order(id=c['order_id'],
@@ -242,8 +227,3 @@ def get_courier(xid):
 
     r['rating'] = round((60*60 - min(min(average), 60*60))/(60*60) * 5, 2)
     return make_response(r, 200)
-
-
-if __name__ == '__main__':
-    app.run()
-
